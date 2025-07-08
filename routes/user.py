@@ -1,37 +1,32 @@
-from fastapi import APIRouter,Header,Request
+from fastapi import APIRouter,Header,Request,HTTPException
 from ..models.userSchema import SignUpScheme,logInSchema
 from ..auth.authHandler import sign_jwt,decode_jwt
 from typing import Annotated
-from ..database.userMongose import User
+import json 
 
 router = APIRouter() 
 
 
-@router.post("/signUp",response_model=User)
-async def signUp(response:SignUpScheme,request:Request):
+@router.post("/signUp")
+async def signUp(user:SignUpScheme,request:Request):
 
-    userDict = response.model_dump()
+    userDict = user.model_dump()
 
     result = await request.app.mongodb["users"].insert_one(userDict)
 
-    inserted_user = await request.app.mongodb["users"].find_one({"_id": result.inserted_id})
+    # token = sign_jwt(user_id=str(result.inserted_id))
 
-    return inserted_user
+    return {"body":"user Signed up."}
 
 
 @router.post("/logIn")
-async def logIn(response:logInSchema,token:Annotated[str|None,Header()]=None):
+async def logIn(response:logInSchema,request:Request,token:Annotated[str|None,Header()]=None):
 
-    response = decode_jwt(token=token)
+    inserted_user = await request.app.mongodb["users"].find_one({"email":response.email,"password":response.password})
 
-    if response!=None:
-        return {
-            "message":response
-        }
-    
-    else:
-        return {
-            "message":"not working"
-        }
+    if not inserted_user:
+        raise HTTPException(status_code=404, detail="User does not exist")
 
+    data = sign_jwt(user_id=str(inserted_user["_id"]))
 
+    return data
