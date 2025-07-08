@@ -9,7 +9,7 @@ JWT_SECRET= os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 def token_response(token:str) -> dict:
-    return {"accessToken":token}
+    return {"token":token}
 
 
 def sign_jwt(user_id:str) -> Dict[str,str]:

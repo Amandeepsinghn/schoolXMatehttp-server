@@ -1,19 +1,14 @@
 from fastapi import FastAPI
+from .routes import user
+from .database.database import lifespan
 
-from pydantic import BaseModel
-from .auth.authHandler import sign_jwt
+app = FastAPI(lifespan=lifespan)
 
-app = FastAPI()
-
-class SignUp(BaseModel):
-    user_id:str
+app.include_router(router=user.router, prefix="/api")
 
 
-@app.post("/signUp")
-async def signUp(response:SignUp):
 
-    print(response)
-    response = sign_jwt(user_id=response.user_id)
-    return response
+
+
 
     

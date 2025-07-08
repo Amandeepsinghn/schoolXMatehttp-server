@@ -2,3 +2,5 @@ fastapi[standard]
 PyJWT
 uvicorn
 python-dotenv
+motor
+dnspython
