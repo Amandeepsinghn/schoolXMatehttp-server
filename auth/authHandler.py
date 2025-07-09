@@ -30,3 +30,8 @@ def decode_jwt(token:str) -> dict:
     
     except:
         return {}
+    
+
+def dbResponseParser(request):
+    request["_id"] = str(request["_id"])
+    return request
