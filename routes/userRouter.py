@@ -14,11 +14,14 @@ router = APIRouter()
 async def signUp(user:SignUpScheme,request:Request):
 
     userDict = user.model_dump()
+
+    user = await request.app.mongodb["users"].find_one({"email":user.email})
+    if user:
+        raise HTTPException(status_code=404,detail="email already taken.")
     
     result = await request.app.mongodb["users"].insert_one(userDict)
 
     return {"body":"user Signed up."}
-
 
 @router.post("/logIn")
 async def logIn(loginData:logInSchema,request:Request,token:Annotated[str|None,Header()]=None):
