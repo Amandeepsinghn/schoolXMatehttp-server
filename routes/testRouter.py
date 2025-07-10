@@ -8,6 +8,7 @@ from ..models.testSchema import testIntialize,testRespond,GenerateTest
 from ..utils import llmChain,testGeneration
 import json 
 import ast
+from bson.objectid import ObjectId
 
 router = APIRouter() 
 
@@ -15,7 +16,7 @@ router = APIRouter()
 sessionData = {}
 
 @router.post("/intialize")
-async def intialize(request:testIntialize):
+async def intialize(request:testIntialize,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
     startDict = request.model_dump()
 
     if startDict["start"] ==True:
@@ -28,7 +29,7 @@ async def intialize(request:testIntialize):
 
 
 @router.post("/respond")
-async def respond(request:testRespond):
+async def respond(request:testRespond,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
 
     request = request.model_dump(exclude_unset=True) 
 
@@ -51,14 +52,23 @@ async def respond(request:testRespond):
 
 
 @router.post("/generateTest")
-async def generateTest(user:GenerateTest):
+async def generateTest(user:GenerateTest,request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
     data= user.model_dump()
 
-    data = testGeneration(data)
+    testList = ast.literal_eval(testGeneration(data))
+    data["test"] = testList
+    data["user_id"] = ObjectId(token["user_id"])
 
-    return {
-        "body":data
-    }
+    del(data["topic"])
+    del(data["subTopic"])
+    del(data["difficultLevel"])
+
+    await request.app.mongodb["tests"].insert_one(data)
+
+    return {"body":"test has been sucessfully created"}
+
+
+
 
 
 
