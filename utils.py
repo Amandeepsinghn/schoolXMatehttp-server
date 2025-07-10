@@ -106,9 +106,65 @@ def llmChain(inputs):
     
     return response 
 
-# inputs = {
-#     "topic": "Physics",
-#     "subTopic": "kinetic-energy",
-#     "difficultLevel": "Intermediate" }
+def testGeneration(inputs):
+    prompt_template = PromptTemplate.from_template("""
+You are an expert test generator AI. Based on the given inputs of topic, subTopic, and difficultyLevel, create a test composed of 10 multiple-choice questions.
 
-# print(llmChain(inputs))
+Input:
+{{ "topic": "<topic>", "subTopic": "<subTopic>", "difficultLevel": "<easy|medium|hard>" }}
+
+Output format (strict JSON):
+Return an array of 10 objects. Each object must have the following structure:
+
+{{
+  "question": "<single question text>",
+  "options": ["<option1>", "<option2>", "<option3>", "<option4>"],
+  "correctAnswer": "<one of the options above>",
+  "correctAnswerPosition": <0-based index of correct answer>,
+  "description": ["<description of option1>", "<description of option2>", "<description of option3>", "<description of option4>"]
+}}
+
+Guidelines:
+- Only one question per object (total 10 questions).
+- All content must be aligned with the given topic, subTopic, and difficultyLevel.
+- The 4 options must be plausible, but only one should be correct.
+- The "description" field should explain each option clearly — why it’s correct or incorrect.
+- Ensure the "correctAnswer" and "correctAnswerPosition" are consistent.
+- Output must be valid JSON (strictly no markdown, no triple backticks, no additional text).
+
+🧠 Example Input:
+
+{{ "topic": "Mathematics", "subTopic": "Algebra", "difficultLevel": "medium" }}
+
+🧠 Example Output:
+
+[
+{{
+  "question": "What is the solution to 2x + 3 = 7?",
+  "options": ["x=2", "x=3", "x=1", "x=4"],
+  "correctAnswer": "x=2",
+  "correctAnswerPosition": 0,
+  "description": [
+    "Correct. Solving 2x + 3 = 7 gives x = 2.",
+    "Incorrect. x=3 would make the equation 2x + 3 = 9.",
+    "Incorrect. x=1 results in 2x + 3 = 5, not 7.",
+    "Incorrect. x=4 gives 2x + 3 = 11."
+  ]
+}}
+]
+
+🚫 Do NOT include explanations outside of the JSON.✅ Output only the raw JSON array of 10 question objects.
+""")
+
+    llm = ChatGroq(api_key=os.getenv("GROQ_API_KEY"), model_name="compound-beta")
+
+    chain = prompt_template | llm | StrOutputParser()
+
+    response = chain.invoke({
+        "topic":inputs["topic"],
+        "subTopic":inputs["subTopic"],
+        "difficultLevel":inputs["difficultLevel"]})
+    
+    return response 
+
+# print(generateTest({"topic":"maths","subTopic":"integeration","difficultLevel":"intermediate"}))

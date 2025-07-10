@@ -12,3 +12,8 @@ class testRespond(BaseModel):
 
     class Config:
         extra = "forbid"  # optional, prevents extra fields
+
+class GenerateTest(BaseModel):
+    topic:str = Field(...)
+    subTopic:str = Field(...)
+    difficultLevel:str = Field(...)

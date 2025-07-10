@@ -4,9 +4,10 @@ from ..auth.authBearer import JWTBearer
 from fastapi.security import HTTPAuthorizationCredentials
 from typing import Annotated
 import uuid
-from ..models.testSchema import testIntialize,testRespond
-from ..utils import llmChain
+from ..models.testSchema import testIntialize,testRespond,GenerateTest
+from ..utils import llmChain,testGeneration
 import json 
+import ast
 
 router = APIRouter() 
 
@@ -47,5 +48,18 @@ async def respond(request:testRespond):
     response["sessionId"] = request["sessionId"]
 
     return {"body":response}
+
+
+@router.post("/generateTest")
+async def generateTest(user:GenerateTest):
+    data= user.model_dump()
+
+    data = testGeneration(data)
+
+    return {
+        "body":data
+    }
+
+
 
 
