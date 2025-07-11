@@ -1,6 +1,5 @@
 fastapi[standard]
 PyJWT
-uvicorn
 python-dotenv
 motor
 dnspython
@@ -8,3 +7,9 @@ pymongo
 langchain
 langchain-core
 langchain-groq
+pinecone
+langchain-community
+Werkzeug
+langchain-huggingface
+sentence-transformers
+pypdf

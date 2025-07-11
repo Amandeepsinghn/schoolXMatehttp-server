@@ -24,3 +24,5 @@ async def startup_db_client(app):
 
 async def shutdown_db_client(app):
     app.mongodb_client.close()
+
+  
