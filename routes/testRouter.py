@@ -69,7 +69,25 @@ async def generateTest(user:GenerateTest,request:Request,token:HTTPAuthorization
 
 
 
+@router.get("/getAllTest")
+async def getTest(request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
 
+    data = request.app.mongodb["tests"].find({"user_id":ObjectId(token["user_id"])},{"topic":1,"subTopic":1})
+
+    dataToShow = []
+
+    async for doc in data:
+        doc["_id"] = str(doc["_id"])
+        dataToShow.append(doc)
+
+    return {"body":dataToShow}
+
+@router.get("/getTest/{test_id}")
+async def getSingleTest(test_id:str,request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+    
+    data = dbResponseParser(await request.app.mongodb["tests"].find_one({"_id":ObjectId(test_id)},{"test":1,"_id":0}))
+
+    return {"body":data}
 
 
 

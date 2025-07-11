@@ -33,5 +33,10 @@ def decode_jwt(token:str) -> dict:
     
 
 def dbResponseParser(request):
-    request["_id"] = str(request["_id"])
+    if "_id" in request:
+        request["_id"] = str(request["_id"])
+    
+    if "user_id" in request:
+        request["user_id"] = str(request["user_id"])
+
     return request
