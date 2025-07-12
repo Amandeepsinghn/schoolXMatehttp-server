@@ -17,3 +17,7 @@ class GenerateTest(BaseModel):
     topic:str = Field(...)
     subTopic:str = Field(...)
     difficultLevel:str = Field(...)
+
+
+class qaSchema(BaseModel):
+    question:str = Field(...)

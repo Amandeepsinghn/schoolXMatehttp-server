@@ -1,18 +1,23 @@
 from fastapi import APIRouter,Header,Request,HTTPException,Depends,UploadFile
 from ..auth.authHandler import dbResponseParser
 from ..auth.authBearer import JWTBearer
+from ..models.testSchema import qaSchema
 from fastapi.security import HTTPAuthorizationCredentials
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import uuid
 from bson.objectid import ObjectId
 import os 
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from dotenv import load_dotenv 
 from pinecone import Pinecone
 from werkzeug.utils import secure_filename
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains import create_retrieval_chain
 from langchain_groq import ChatGroq
+from langchain_core.runnables import RunnableMap
+from langchain_core.documents import Document
 load_dotenv()
 
 embeddings=HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -38,7 +43,7 @@ index = pc.Index("school")
 router = APIRouter() 
 
 @router.post("/uploadFile")
-async def uploadPdf(file:UploadFile,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+async def uploadPdf(file:UploadFile,request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
     try:
         filename = secure_filename(file.filename)
         upload_dir = "uploadedFile"
@@ -51,6 +56,10 @@ async def uploadPdf(file:UploadFile,token:HTTPAuthorizationCredentials=Depends(J
         with open(tempPath,"wb") as fileObj:
             fileObj.write(await file.read())
         
+        result = await request.app.mongodb["chatPdf"].insert_one({"user_id":ObjectId(token["user_id"])})
+
+        unique_id = str(result.inserted_id)
+
         loader = PyPDFLoader(tempPath)
         docs = loader.load()
 
@@ -63,18 +72,42 @@ async def uploadPdf(file:UploadFile,token:HTTPAuthorizationCredentials=Depends(J
             
         vectorToUpload = [] 
         for i in range(len(texts)):
-            vectorToUpload.append((unique_uuid,embedding[i],{"user_id":token["user_id"]}))
+            vectorToUpload.append((str(uuid.uuid4()),embedding[i],{"user_id":token["user_id"],"unique_id":unique_id,"text":texts[i]}))
 
         index.upsert(vectorToUpload)
 
-        return {
-            "body":{
-                "sessionId":unique_uuid
-            }
-        }
+        return {"body":{"sessionId":unique_id}}
     finally:
         os.remove(tempPath)
     
+@router.post("/qaChat/{sessionId}")
+async def qaChat(question:qaSchema,sessionId:str,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+    question = question.model_dump()
+    unique_id = sessionId
+
+    queryEmbeddding = embeddings.embed_query(question["question"])
+
+    
+    response = index.query(        
+        vector = queryEmbeddding,
+        top_k=5,
+        filter={"user_id":str(token["user_id"]),"unique_id":unique_id},
+        include_metadata=True
+    )
+
+    docs = [Document(page_content=match["metadata"]["text"],metadata=match["metadata"]) for match in response['matches']]
+
+
+    documentChain = create_stuff_documents_chain(llm=llm,prompt=prompt)
+
+    retreival_chain = RunnableMap({"context":lambda _:docs,"input":lambda x:x["input"]}) | documentChain
+
+    answer =retreival_chain.invoke({"input":question["question"]})
+
+
+    return {"body":answer}
+
+
 
 
 
