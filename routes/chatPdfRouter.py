@@ -56,7 +56,7 @@ async def uploadPdf(file:UploadFile,request:Request,token:HTTPAuthorizationCrede
         with open(tempPath,"wb") as fileObj:
             fileObj.write(await file.read())
         
-        result = await request.app.mongodb["chatPdf"].insert_one({"user_id":ObjectId(token["user_id"])})
+        result = await request.app.mongodb["chatPdf"].insert_one({"user_id":ObjectId(token["user_id"]),"name":filename,"chatHistory":[]})
 
         unique_id = str(result.inserted_id)
 
@@ -81,7 +81,7 @@ async def uploadPdf(file:UploadFile,request:Request,token:HTTPAuthorizationCrede
         os.remove(tempPath)
     
 @router.post("/qaChat/{sessionId}")
-async def qaChat(question:qaSchema,sessionId:str,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+async def qaChat(question:qaSchema,sessionId:str,request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
     question = question.model_dump()
     unique_id = sessionId
 
@@ -104,8 +104,30 @@ async def qaChat(question:qaSchema,sessionId:str,token:HTTPAuthorizationCredenti
 
     answer =retreival_chain.invoke({"input":question["question"]})
 
+    response = await request.app.mongodb["chatPdf"].update_one({"user_id": ObjectId(token["user_id"])},
+    {"$push": {"chatHistory":{"question":question["question"],"answer":answer}}})
 
     return {"body":answer}
+
+@router.get("/getAllpdf")
+async def getAllpdf(request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+
+    response = request.app.mongodb["chatPdf"].find({"user_id":ObjectId(token["user_id"])},{"name":1,"_id":1,"chatHistory":1})
+
+    dataToShow = []
+    async for doc in response:
+        doc["_id"] = str(doc["_id"])
+        dataToShow.append(doc)
+
+    return {"body":dataToShow}
+
+
+@router.get("/getSinglePdf")
+async def singlePdf(request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+
+    response = dbResponseParser(await request.app.mongodb["chatPdf"].find_one({"user_id":token["user_id"]},{"name":1,"_id":1}))
+
+    return {"body":response}
 
 
 
