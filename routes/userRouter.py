@@ -61,11 +61,11 @@ async def updateProfile(user:UpdateSchema,request:Request,token:HTTPAuthorizatio
             query = {'$set':{'email':userData["email"]}}
             emailResponse = await request.app.mongodb["users"].update_one(filter,query)
 
-        elif userData["password"]!=None:
+        if userData["password"]!=None:
             query = {'$set':{'password':userData["password"]}}
             passwordResponse = await request.app.mongodb["users"].update_one(filter,query)
 
-        elif userData["name"]!=None:
+        if userData["name"]!=None:
             query = {'$set':{'name':userData["name"]}}
             nameResponse = await request.app.mongodb["users"].update_one(filter,query)
 
