@@ -104,7 +104,7 @@ async def qaChat(question:qaSchema,sessionId:str,request:Request,token:HTTPAutho
 
     answer =retreival_chain.invoke({"input":question["question"]})
 
-    response = await request.app.mongodb["chatPdf"].update_one({"user_id": ObjectId(token["user_id"])},
+    response = await request.app.mongodb["chatPdf"].update_one({"user_id": ObjectId(token["user_id"]),"_id":ObjectId(sessionId)},
     {"$push": {"chatHistory":{"question":question["question"],"answer":answer}}})
 
     return {"body":answer}
