@@ -14,4 +14,3 @@ class UpdateSchema(BaseModel):
     email:Optional[EmailStr] = Field(None)
     password:Optional[str] = Field(None,min_length=1)
     name:Optional[str] = Field(None,min_length=1)
-    

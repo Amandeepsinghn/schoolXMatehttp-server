@@ -21,3 +21,6 @@ class GenerateTest(BaseModel):
 
 class qaSchema(BaseModel):
     question:str = Field(...)
+
+class pdfSchema(BaseModel):
+    id:str = Field(...)

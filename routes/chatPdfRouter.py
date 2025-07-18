@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Header,Request,HTTPException,Depends,UploadFile
 from ..auth.authHandler import dbResponseParser
 from ..auth.authBearer import JWTBearer
-from ..models.testSchema import qaSchema
+from ..models.testSchema import qaSchema,pdfSchema
 from fastapi.security import HTTPAuthorizationCredentials
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import uuid
@@ -122,10 +122,12 @@ async def getAllpdf(request:Request,token:HTTPAuthorizationCredentials=Depends(J
     return {"body":dataToShow}
 
 
-@router.get("/getSinglePdf")
-async def singlePdf(request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
+@router.post("/getSinglePdf")
+async def singlePdf(data:pdfSchema,request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
 
-    response = dbResponseParser(await request.app.mongodb["chatPdf"].find_one({"user_id":token["user_id"]},{"name":1,"_id":1}))
+    data = data.model_dump()
+
+    response = dbResponseParser(await request.app.mongodb["chatPdf"].find_one({"_id":ObjectId(data["id"])},{"name":1,"_id":1}))
 
     return {"body":response}
 
