@@ -127,9 +127,11 @@ async def singlePdf(data:pdfSchema,request:Request,token:HTTPAuthorizationCreden
 
     data = data.model_dump()
 
-    response = dbResponseParser(await request.app.mongodb["chatPdf"].find_one({"_id":ObjectId(data["id"])},{"name":1,"_id":1}))
+    id = data["id"]
 
-    return {"body":response}
+    response = dbResponseParser(await request.app.mongodb["chatPdf"].find_one({"_id":ObjectId(id)},{"_id":0,"chatHistory":1}))
+
+    return {"body":response["chatHistory"]}
 
 
 
