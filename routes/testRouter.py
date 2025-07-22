@@ -59,11 +59,11 @@ async def generateTest(user:GenerateTest,request:Request,token:HTTPAuthorization
     data["test"] = testList
     data["user_id"] = ObjectId(token["user_id"])
 
-    del(data["topic"])
-    del(data["subTopic"])
-    del(data["difficultLevel"])
+    data["current_position"] = 0 
+    data["total_question"] = 10 
 
     await request.app.mongodb["tests"].insert_one(data)
+
 
     return {"body":"test has been sucessfully created"}
 
@@ -72,7 +72,7 @@ async def generateTest(user:GenerateTest,request:Request,token:HTTPAuthorization
 @router.get("/getAllTest")
 async def getTest(request:Request,token:HTTPAuthorizationCredentials=Depends(JWTBearer())):
 
-    data = request.app.mongodb["tests"].find({"user_id":ObjectId(token["user_id"])},{"topic":1,"subTopic":1})
+    data = request.app.mongodb["tests"].find({"user_id":ObjectId(token["user_id"])},{"topic":1,"subTopic":1,"current_position":1})
 
     dataToShow = []
 
