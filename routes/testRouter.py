@@ -62,10 +62,13 @@ async def generateTest(user:GenerateTest,request:Request,token:HTTPAuthorization
     data["current_position"] = 0 
     data["total_question"] = 10 
 
-    await request.app.mongodb["tests"].insert_one(data)
+    response = await request.app.mongodb["tests"].insert_one(data)
 
+    id = response.inserted_id 
 
-    return {"body":"test has been sucessfully created"}
+    idString = str(id) 
+
+    return {"body":idString}
 
 
 

@@ -108,53 +108,54 @@ def llmChain(inputs):
 
 def testGeneration(inputs):
     prompt_template = PromptTemplate.from_template("""
-You are an expert test generator AI. Based on the given inputs of topic, subTopic, and difficultyLevel, create a test composed of 10 multiple-choice questions.
+    You are an expert educational test generator AI. Based on the input parameters — topic, subTopic, and difficultLevel — create a test containing exactly 10 multiple-choice questions that are fully aligned with the specified subject matter.
 
-Input:
-{{ "topic": "<topic>", "subTopic": "<subTopic>", "difficultLevel": "<easy|medium|hard>" }}
+    Input (JSON format):
+    {{
+    "topic": "{topic}",
+    "subTopic": "{subTopic}",
+    "difficultLevel": "{difficultLevel}" 
+    }}
 
-Output format (strict JSON):
-Return an array of 10 objects. Each object must have the following structure:
+    Your task:
+    - Generate questions relevant specifically to the given topic and subTopic.
+    - Do NOT default to mathematics unless the topic/subTopic specifies it.
+    - Use the difficulty level to calibrate complexity (easy, medium, hard).
 
-{{
-  "question": "<single question text>",
-  "options": ["<option1>", "<option2>", "<option3>", "<option4>"],
-  "correctAnswer": "<one of the options above>",
-  "correctAnswerPosition": <0-based index of correct answer>,
-  "description": ["<description of option1>", "<description of option2>", "<description of option3>", "<description of option4>"]
-}}
+    Output format (STRICTLY JSON array of 10 objects):
+    Each question must follow this structure:
 
-Guidelines:
-- Only one question per object (total 10 questions).
-- All content must be aligned with the given topic, subTopic, and difficultyLevel.
-- The 4 options must be plausible, but only one should be correct.
-- The "description" field should explain each option clearly — why it’s correct or incorrect.
-- Ensure the "correctAnswer" and "correctAnswerPosition" are consistent.
-- Output must be valid JSON (strictly no markdown, no triple backticks, no additional text).
+    {{
+    "question": "<single question text>",
+    "options": ["<option1>", "<option2>", "<option3>", "<option4>"],
+    "correctAnswer": "<must match one of the options>",
+    "correctAnswerPosition": <integer 0 to 3>,
+    "description": [
+        "<Explanation for option 1>",
+        "<Explanation for option 2>",
+        "<Explanation for option 3>",
+        "<Explanation for option 4>"
+    ]
+    }}
 
-🧠 Example Input:
+    Rules:
+    - Each question must be based strictly on the provided topic and subTopic.
+    - Options should be plausible and domain-appropriate, with only one correct answer.
+    - Descriptions should justify why each option is correct or incorrect.
+    - Ensure all answers and indexes are consistent.
+    - Return ONLY valid JSON. No markdown, no extra text, no code fences.
 
-{{ "topic": "Mathematics", "subTopic": "Algebra", "difficultLevel": "medium" }}
+    Example Input:
+    {{
+    "topic": "Biology",
+    "subTopic": "Cell Structure",
+    "difficultLevel": "easy"
+    }}
 
-🧠 Example Output:
+    ✅ Expected Output: JSON array of 10 properly structured questions about **Cell Structure in Biology**.
 
-[
-{{
-  "question": "What is the solution to 2x + 3 = 7?",
-  "options": ["x=2", "x=3", "x=1", "x=4"],
-  "correctAnswer": "x=2",
-  "correctAnswerPosition": 0,
-  "description": [
-    "Correct. Solving 2x + 3 = 7 gives x = 2.",
-    "Incorrect. x=3 would make the equation 2x + 3 = 9.",
-    "Incorrect. x=1 results in 2x + 3 = 5, not 7.",
-    "Incorrect. x=4 gives 2x + 3 = 11."
-  ]
-}}
-]
-
-🚫 Do NOT include explanations outside of the JSON.✅ Output only the raw JSON array of 10 question objects.
-""")
+    Now generate the questions.
+    """)
 
     llm = ChatGroq(api_key=os.getenv("GROQ_API_KEY"), model_name="compound-beta")
 
