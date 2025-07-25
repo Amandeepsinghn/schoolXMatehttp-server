@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from .routes import userRouter,testRouter,chatPdfRouter
-from .database.database import lifespan
+from routes import userRouter,testRouter,chatPdfRouter
+from database.database import lifespan
 from fastapi.middleware.cors import CORSMiddleware
 
 

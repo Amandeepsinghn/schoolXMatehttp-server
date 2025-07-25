@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Header,Request,HTTPException,Depends,UploadFile
-from ..auth.authHandler import dbResponseParser
-from ..auth.authBearer import JWTBearer
-from ..models.testSchema import qaSchema,pdfSchema
+from auth.authHandler import dbResponseParser
+from auth.authBearer import JWTBearer
+from models.testSchema import qaSchema,pdfSchema
 from fastapi.security import HTTPAuthorizationCredentials
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import uuid

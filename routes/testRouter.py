@@ -1,11 +1,11 @@
 from fastapi import APIRouter,Header,Request,HTTPException,Depends
-from ..auth.authHandler import dbResponseParser
-from ..auth.authBearer import JWTBearer
+from auth.authHandler import dbResponseParser
+from auth.authBearer import JWTBearer
 from fastapi.security import HTTPAuthorizationCredentials
 from typing import Annotated
 import uuid
-from ..models.testSchema import testIntialize,testRespond,GenerateTest
-from ..utils import llmChain,testGeneration
+from models.testSchema import testIntialize,testRespond,GenerateTest
+from utils import llmChain,testGeneration
 import json 
 import ast
 from bson.objectid import ObjectId

@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Header,Request,HTTPException,Depends
-from ..models.userSchema import SignUpScheme,logInSchema,UpdateSchema
-from ..auth.authHandler import sign_jwt,decode_jwt,dbResponseParser
-from ..auth.authBearer import JWTBearer
+from models.userSchema import SignUpScheme,logInSchema,UpdateSchema
+from auth.authHandler import sign_jwt,decode_jwt,dbResponseParser
+from auth.authBearer import JWTBearer
 from fastapi.security import HTTPAuthorizationCredentials
 from typing import Annotated
 import json 

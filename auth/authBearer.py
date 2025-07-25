@@ -3,7 +3,7 @@ from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 
-from .authHandler import decode_jwt
+from auth.authHandler import decode_jwt
 
 
 
