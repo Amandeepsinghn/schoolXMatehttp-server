@@ -18,9 +18,16 @@ from langchain.chains import create_retrieval_chain
 from langchain_groq import ChatGroq
 from langchain_core.runnables import RunnableMap
 from langchain_core.documents import Document
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain.embeddings import HuggingFaceInferenceAPIEmbeddings
 load_dotenv()
 
-embeddings=HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+# embeddings=HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+repo_id = "sentence-transformers/all-MiniLM-L6-v2"
+
+embeddings = HuggingFaceEndpointEmbeddings(model=repo_id,huggingfacehub_api_token=os.getenv("HF_TOKEN"))
+
 llm=ChatGroq(groq_api_key=os.getenv("GROQ_API_KEY"),model_name="Llama3-8b-8192")
 
 prompt=ChatPromptTemplate.from_template(
@@ -67,6 +74,7 @@ async def uploadPdf(file:UploadFile,request:Request,token:HTTPAuthorizationCrede
         finalDocument = splitter.split_documents(docs)
         
         texts = [doc.page_content for doc in finalDocument]
+
 
         embedding = embeddings.embed_documents(texts)
             

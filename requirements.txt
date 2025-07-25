@@ -11,5 +11,5 @@ pinecone
 langchain-community
 Werkzeug
 langchain-huggingface
-sentence-transformers
+huggingface_hub
 pypdf
